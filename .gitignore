@@ -1,0 +1,62 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Google Cloud credentials
+*.json
+!package.json
+!package-lock.json
+service-account*.json
+google-credentials*.json
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Dependency directories
+node_modules/
+
+# Testing
+coverage/
+
+# Production build
+build/
+dist/
+
+# Temporary files
+tmp/
+temp/
+uploads/
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Security related
+*.pem
+*.key
+*.crt
+*.csr
+*.srl
+*.p12
+*.pfx

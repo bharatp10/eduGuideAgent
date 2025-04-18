@@ -1,0 +1,54 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          npm ci
+          cd ../frontend
+          npm ci
+
+      - name: Run SAST Scan
+        uses: github/codeql-action/analyze@v2
+        with:
+          languages: javascript
+
+      - name: Run Dependency Check
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+
+      - name: Run Secret Scanner
+        uses: zricethezav/gitleaks-action@master
+
+      - name: Run Security Linter
+        run: |
+          cd backend
+          npm audit
+          cd ../frontend
+          npm audit
+
+      - name: Run Container Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          security-checks: 'vuln,config,secret'
+          severity: 'CRITICAL,HIGH'

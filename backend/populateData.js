@@ -1,43 +1,68 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('MongoDB Connected'))
-    .catch(err => console.error(err));
-
-// Models
+// Import the Resource model from server.js
 const ResourceSchema = new mongoose.Schema({
-    type: String, // 'textbook' or 'question_paper'
-    subject: String, // 'maths' or 'science'
-    grade: Number, // e.g., 10
+    type: String,
+    subject: String,
+    grade: Number,
     title: String,
-    year: Number, // For question papers
-    url: String // Link to the resource
+    year: Number,
+    url: String
 });
 
 const Resource = mongoose.model('Resource', ResourceSchema);
 
-// Sample Data
-const sampleData = [
-    { type: 'textbook', subject: 'maths', grade: 10, title: 'CBSE Maths Textbook', year: 2025, url: 'http://example.com/maths-textbook' },
-    { type: 'textbook', subject: 'science', grade: 10, title: 'CBSE Science Textbook', year: 2025, url: 'http://example.com/science-textbook' },
-    { type: 'question_paper', subject: 'maths', grade: 10, title: 'Maths Question Paper 2024', year: 2024, url: 'http://example.com/maths-qp-2024' },
-    { type: 'question_paper', subject: 'science', grade: 10, title: 'Science Question Paper 2024', year: 2024, url: 'http://example.com/science-qp-2024' },
-    // Add more question papers for the last 10 years
+// Sample data
+const sampleResources = [
+    {
+        type: 'textbook',
+        subject: 'maths',
+        grade: 10,
+        title: 'Advanced Algebra',
+        year: 2024,
+        url: 'https://example.com/algebra'
+    },
+    {
+        type: 'question_paper',
+        subject: 'science',
+        grade: 9,
+        title: 'Physics Final Exam',
+        year: 2024,
+        url: 'https://example.com/physics-exam'
+    },
+    {
+        type: 'textbook',
+        subject: 'science',
+        grade: 10,
+        title: 'Chemistry Basics',
+        year: 2024,
+        url: 'https://example.com/chemistry'
+    }
 ];
 
-// Populate Database
-const populateData = async () => {
-    try {
-        await Resource.deleteMany(); // Clear existing data
-        await Resource.insertMany(sampleData);
-        console.log('Sample data inserted successfully');
-        mongoose.connection.close();
-    } catch (err) {
-        console.error(err);
-        mongoose.connection.close();
-    }
-};
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(async () => {
+        console.log('MongoDB Connected');
+        
+        try {
+            // Clear existing data
+            await Resource.deleteMany({});
+            console.log('Cleared existing resources');
 
-populateData();
+            // Insert sample data
+            await Resource.insertMany(sampleResources);
+            console.log('Sample data inserted successfully');
+        } catch (error) {
+            console.error('Error populating data:', error);
+        } finally {
+            // Close the connection
+            mongoose.connection.close();
+            console.log('Database connection closed');
+        }
+    })
+    .catch(err => {
+        console.error('MongoDB Connection Error:', err);
+        process.exit(1);
+    });
