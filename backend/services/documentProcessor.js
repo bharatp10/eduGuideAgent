@@ -1,6 +1,6 @@
 const { OpenAI } = require('openai');
 const pdfParse = require('pdf-parse');
-const { PineconeClient } = require('@pinecone-database/pinecone');
+const { Pinecone } = require('@pinecone-database/pinecone');
 const logger = require('../config/logger');
 
 class DocumentProcessor {
@@ -8,16 +8,16 @@ class DocumentProcessor {
         this.openai = new OpenAI({
             apiKey: process.env.OPENAI_API_KEY
         });
-        this.pinecone = new PineconeClient();
-        this.initialize();
-    }
-
-    async initialize() {
-        await this.pinecone.init({
-            environment: process.env.PINECONE_ENVIRONMENT,
+        if (!process.env.PINECONE_API_KEY || !process.env.PINECONE_ENVIRONMENT || !process.env.PINECONE_INDEX) {
+            throw new Error('Missing Pinecone environment variables. Please set PINECONE_API_KEY, PINECONE_ENVIRONMENT, and PINECONE_INDEX in your .env file.');
+        }
+        this.pinecone = new Pinecone({
             apiKey: process.env.PINECONE_API_KEY
         });
-        this.index = this.pinecone.Index(process.env.PINECONE_INDEX);
+        this.index = this.pinecone.index({
+            name: process.env.PINECONE_INDEX,
+            environment: process.env.PINECONE_ENVIRONMENT
+        });
     }
 
     async processDocument(file) {

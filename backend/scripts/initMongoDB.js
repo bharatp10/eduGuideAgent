@@ -1,5 +1,5 @@
 db.createRole({
-    role: "eduGuideRole",
+    role: "eduGuideUserRole",
     privileges: [
         {
             resource: { db: "eduGuideDB", collection: "resources" },
@@ -14,7 +14,7 @@ db.createRole({
 });
 
 db.createUser({
-    user: "eduGuideApp",
+    user: "edudbuser",
     pwd: passwordPrompt(),
     roles: [
         { role: "eduGuideRole", db: "eduGuideDB" }

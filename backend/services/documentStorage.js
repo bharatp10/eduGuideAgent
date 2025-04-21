@@ -1,19 +1,13 @@
-const { Storage } = require('@google-cloud/storage');
 const path = require('path');
 const crypto = require('crypto');
 const logger = require('../config/logger');
-const config = require('../config/storage');
-
-const storage = new Storage({
-    projectId: config.projectId,
-    keyFilename: config.keyFilename
-});
-
-const bucket = storage.bucket(config.bucketName);
+const configPromise = require('../config/storage');
 
 class DocumentStorageService {
     async uploadDocument(file, metadata) {
         try {
+            const config = await configPromise;
+            const bucket = config.bucket;
             // Generate a unique filename
             const fileHash = crypto.createHash('md5')
                 .update(file.buffer)
@@ -54,6 +48,8 @@ class DocumentStorageService {
 
     async deleteDocument(filename) {
         try {
+            const config = await configPromise;
+            const bucket = config.bucket;
             const file = bucket.file(filename);
             await file.delete();
             logger.info('Document deleted successfully', { filename });
@@ -65,6 +61,8 @@ class DocumentStorageService {
 
     async getSignedUrl(filename, expiresIn = 3600) {
         try {
+            const config = await configPromise;
+            const bucket = config.bucket;
             const file = bucket.file(filename);
             const [url] = await file.getSignedUrl({
                 version: 'v4',
@@ -80,19 +78,14 @@ class DocumentStorageService {
 
     async moveDocument(oldFilename, newFilename) {
         try {
+            const config = await configPromise;
+            const bucket = config.bucket;
             const sourceFile = bucket.file(oldFilename);
             const destinationFile = bucket.file(newFilename);
-            
             await sourceFile.move(destinationFile);
             await destinationFile.makePublic();
-            
             const publicUrl = `https://storage.googleapis.com/${config.bucketName}/${newFilename}`;
-            
-            logger.info('Document moved successfully', { 
-                oldFilename, 
-                newFilename 
-            });
-
+            logger.info('Document moved successfully', { oldFilename, newFilename });
             return {
                 filename: newFilename,
                 publicUrl

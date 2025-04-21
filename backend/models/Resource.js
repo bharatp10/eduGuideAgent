@@ -68,8 +68,7 @@ const ResourceSchema = new mongoose.Schema({
         select: false // Only load when explicitly requested
     },
     keywords: [{
-        type: String,
-        index: true
+        type: String
     }],
     
     // Metadata
